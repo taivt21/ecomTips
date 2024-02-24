@@ -1,23 +1,23 @@
 const { Schema, model } = require("mongoose"); // Erase if already required
 
-const DOCUMENT_NAME = "Key";
-const COLLECTION_NAME = "Keys";
+const DOCUMENT_NAME = "Apikeys";
+const COLLECTION_NAME = "Apikeys";
 // Declare the Schema of the Mongo model
-var keyTokenSchema = new Schema(
+var apiKeySchema = new Schema(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "Shop",
-    },
-
-    privateKey: {
+    key: {
       type: String,
       required: true,
+      unique: true,
     },
-    publicKey: {
-      type: String,
+    status: {
+      type: Boolean,
+      default: true,
+    },
+    permissions: {
+      type: [String],
       required: true,
+      enum: ["0000", "1111", "2222"],
     },
     refreshToken: {
       type: Array,
@@ -31,4 +31,4 @@ var keyTokenSchema = new Schema(
 );
 
 //Export the model
-module.exports = model(DOCUMENT_NAME, keyTokenSchema);
+module.exports = model(DOCUMENT_NAME, apiKeySchema);

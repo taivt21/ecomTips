@@ -26,39 +26,44 @@ class AccessService {
         roles: [roleShop.SHOP],
       });
       if (newShop) {
-        //create priveKey, publicKey
-        const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-          privateKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-        });
+        //create priveKey, publicKey (phuc tap)
+        // const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+        //   modulusLength: 4096,
+        //   publicKeyEncoding: {
+        //     type: "pkcs1",
+        //     format: "pem",
+        //   },
+        //   privateKeyEncoding: {
+        //     type: "pkcs1",
+        //     format: "pem",
+        //   },
+        // });
+
+        // (don gian)
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
         console.log({ privateKey, publicKey }); //save collection keystore
 
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        // const publicKeyString = await KeyTokenService.createKeyToken({
+        //   userId: newShop._id,
+        //   publicKey
+        // });
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         });
 
-        if (!publicKeyString) {
-          return { code: "xxx", message: "publickeyString err" };
+        if (!keyStore) {
+          return { code: "xxx", message: "keyStore err" };
         }
 
-        const publicKeyObject = crypto.createPublicKey(publicKeyString);
-        console.log(
-          "🚀 ~ AccessService ~ signUp= ~ publicKeyObject:",
-          publicKeyObject
-        );
+        // const publicKeyObject = crypto.createPublicKey(publicKeyString);
 
         //create token pair
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyString,
+          publicKey,
           privateKey
         );
         console.log(`Created toekn success:`, tokens);
