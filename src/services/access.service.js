@@ -4,7 +4,12 @@ const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils/index");
-const { BadRequestError, ConflictRequestError } = require("../core/error.response");
+const {
+  BadRequestError,
+  ConflictRequestError,
+  AuthFailureError,
+} = require("../core/error.response");
+const { findByEmail } = require("./shop.service");
 const roleShop = {
   SHOP: "SHOP",
   WRITER: "WRITER",
@@ -12,12 +17,54 @@ const roleShop = {
   ADMIN: "ADMIN",
 };
 class AccessService {
+
+  static logout = async (keystore) => {
+    const delKey = await KeyTokenService.removeKeyById(keystore._id);
+    console.log({ delKey });
+    return delKey;
+  };
+  static login = async ({ email, password, refreshToken = null }) => {
+    //check email, check password,
+    // create access token and refresh token
+    //generate tokens
+    //get data return from login
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) {
+      throw new BadRequestError("Shop not found");
+    }
+    const match = bcrypt.compare(password, foundShop.password);
+    if (!match) {
+      throw new AuthFailureError("Authentication failed");
+    }
+    const { _id: userId } = foundShop;
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = crypto.randomBytes(64).toString("hex");
+    const tokens = await createTokenPair(
+      { userId: userId, email },
+      publicKey,
+      privateKey
+    );
+    await KeyTokenService.createKeyToken({
+      refreshToken: tokens.refreshToken,
+      privateKey,
+      publicKey,
+      userId,
+    });
+    return {
+      shop: getInfoData({
+        fields: ["_id", "name", "email"],
+        object: foundShop,
+      }),
+      tokens,
+    };
+  };
+
   static signUp = async ({ name, email, password }) => {
     // try {
     const holderShop = await shopModel.findOne({ email }).lean();
 
     if (holderShop) {
-      throw new BadRequestError("Error: shop already exists")
+      throw new BadRequestError("Error: shop already exists");
     }
     const passwordHash = await bcrypt.hash(password, 10);
     const newShop = await shopModel.create({
@@ -49,15 +96,15 @@ class AccessService {
       //   userId: newShop._id,
       //   publicKey
       // });
-      const keyStore = await KeyTokenService.createKeyToken({
-        userId: newShop._id,
-        publicKey,
-        privateKey,
-      });
+      // const keyStore = await KeyTokenService.createKeyToken({
+      //   userId: newShop._id,
+      //   publicKey,
+      //   privateKey,
+      // });
 
-      if (!keyStore) {
-        return { code: "xxx", message: "keyStore err" };
-      }
+      // if (!keyStore) {
+      //   return { code: "xxx", message: "keyStore err" };
+      // }
 
       // const publicKeyObject = crypto.createPublicKey(publicKeyString);
 
