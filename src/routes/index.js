@@ -3,16 +3,12 @@
 const express = require("express");
 const { apiKey, permissions } = require("../auth/checkAuth");
 const router = express.Router();
-const { pushToLogDiscord } = require("../middlewares/");
 
-//ad to log discord
-router.use(pushToLogDiscord);
 //check api key
 router.use(apiKey);
 //check permissions
 router.use(permissions("0000"));
 
-router.use("/v1/api/inventory", require("./inventory"));
 router.use("/v1/api/checkout", require("./checkout"));
 router.use("/v1/api/cart", require("./cart"));
 router.use("/v1/api/discount", require("./discount"));
