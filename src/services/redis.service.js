@@ -8,20 +8,9 @@ const {
 
 const redisClient = redis.createClient();
 
-(async () => {
-  await redisClient.connect();
-})();
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
-console.log("Connecting to the Redis");
-
-redisClient.on("ready", () => {
-  console.log("Connected!");
-});
-
-redisClient.on("error", (err) => {
-  console.log("Error in the Connection");
-});
-
+redisClient.connect();
 // redisClient.ping((err, result) => {
 //   if (err) {
 //     console.log(`Error connecting to Redis:`, err);

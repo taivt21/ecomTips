@@ -16,6 +16,12 @@ app.use(helmets());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//test pub sub redis
+require("./tests/inventory.test.js");
+const pruductTest = require("./tests/product.test.js");
+pruductTest.purchaseProduct("product:001", 10);
+
 //init db
 require("./dbs/init.mongodb.js");
 // const { checkOverload } = require("./helpers/check.connect.js");
