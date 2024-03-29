@@ -6,11 +6,20 @@ const {
   reservationInventory,
 } = require("../models/repositories/inventory.repo");
 
-const redisClient = redis.createClient();
+// const redisClient = redis.createClient();
 
-redisClient.on("error", (err) => console.log("Redis Client Error", err));
+// redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
-redisClient.connect();
+// redisClient.connect();
+(async () => {
+  const redisClient = redis.createClient();
+
+  redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+  await redisClient.connect();
+
+})();
+
 // redisClient.ping((err, result) => {
 //   if (err) {
 //     console.log(`Error connecting to Redis:`, err);
@@ -19,8 +28,8 @@ redisClient.connect();
 //   }
 // });
 
-const pexpire = promisify(redisClient.pExpire).bind(redisClient);
-const setnxAsync = promisify(redisClient.setNX).bind(redisClient);
+// const pexpire = promisify(redisClient.pExpire).bind(redisClient);
+// const setnxAsync = promisify(redisClient.setNX).bind(redisClient);
 
 const acquireLock = async (productId, quantity, carId) => {
   const key = `lock_v2023_${productId}`;
